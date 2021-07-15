@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ダイアログ -->
+    <style name="dialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/dialog_open</item>
+        <item name="android:windowExitAnimation">@anim/dialog_close</item>
+        <item name="android:windowMinWidthMajor">@dimen/dialog_min_width_major</item>
+        <item name="android:windowMinWidthMinor">@dimen/dialog_min_width_minor</item>
+    </style>
+
+</resources>
