@@ -34,32 +34,34 @@ public class CreateTaskDialog extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState){
-
         //ダイアログ取得
         Dialog dialog = super.onCreateDialog(savedInstanceState);
-
-        // タイトル非表示
-        dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        // フルスクリーン
-        dialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
-        // 背景を透明にする(デフォルトテーマに付いている影などを消す)
+        //背景を透明にする(デフォルトテーマに付いている影などを消す) ※これをしないと、画面横サイズまで拡張されない
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
         //アニメーションを設定
         dialog.getWindow().getAttributes().windowAnimations = R.style.dialogAnimation;
+        //ダイアログを返す
+        return dialog;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        //ダイアログ取得
+        Dialog dialog = getDialog();
 
         //-- ダイアログデザインの設定
         //画面メトリクスの取得
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         //レイアウトパラメータの取得
         WindowManager.LayoutParams lp = dialog.getWindow().getAttributes();
-        lp.width = metrics.widthPixels;                 //横幅=画面サイズ
-        lp.gravity = Gravity.BOTTOM;                    //位置=画面下部
+        lp.width   = metrics.widthPixels;                   //横幅=画面サイズ
+        lp.gravity = Gravity.BOTTOM;                        //位置=画面下部
         //ダイアログのデザインとして設定
         dialog.getWindow().setAttributes(lp);
 
-        //ダイアログを返す
-        return dialog;
+        return;
     }
 
 }

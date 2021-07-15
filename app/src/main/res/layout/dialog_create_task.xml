@@ -5,7 +5,6 @@
     android:layout_height="wrap_content"
     android:background="@drawable/dialog_frame">
 
-    <!-- ダイアログ上部 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -23,12 +22,11 @@
             android:textSize="14sp"
             android:textColor="@color/black"/>
 
-        <!-- 保存 ボタン -->
         <Button
             android:id="@+id/positive_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:layout_margin="4dp"
             android:layout_marginRight="16dp"
             android:layout_gravity="center_vertical"
@@ -114,9 +112,5 @@
             android:textSize="12sp" />
 
     </LinearLayout>
-
-    <Space
-        android:layout_width="0dp"
-        android:layout_height="80dp"/>
 
 </LinearLayout>
