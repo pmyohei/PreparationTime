@@ -12,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.NumberPicker;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
@@ -40,6 +42,7 @@ public class CreateTaskDialog extends DialogFragment {
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         //アニメーションを設定
         dialog.getWindow().getAttributes().windowAnimations = R.style.dialogAnimation;
+
         //ダイアログを返す
         return dialog;
     }
@@ -60,6 +63,30 @@ public class CreateTaskDialog extends DialogFragment {
         lp.gravity = Gravity.BOTTOM;                        //位置=画面下部
         //ダイアログのデザインとして設定
         dialog.getWindow().setAttributes(lp);
+
+        //---- ビューの設定も本メソッドで行う必要あり（onCreateDialog()内だと落ちる）
+        //-- NumberPicker の設定
+        //ビュー取得
+        NumberPicker np100th = (NumberPicker) dialog.findViewById(R.id.np_dialogTime100th);
+        NumberPicker np10th  = (NumberPicker) dialog.findViewById(R.id.np_dialogTime10th);
+        NumberPicker np1th   = (NumberPicker) dialog.findViewById(R.id.np_dialogTime1th);
+        //値の範囲を設定
+        np100th.setMaxValue(9);
+        np100th.setMinValue(0);
+        np10th.setMaxValue(9);
+        np10th.setMinValue(0);
+        np1th.setMaxValue(9);
+        np1th.setMinValue(0);
+
+        //-- 「保存ボタン」のリスナー設定
+        Button btEntry = (Button)dialog.findViewById(R.id.bt_entryTask);
+        btEntry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //★DBへ保存
+
+            }
+        });
 
         return;
     }

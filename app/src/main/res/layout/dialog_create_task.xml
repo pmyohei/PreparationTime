@@ -23,7 +23,7 @@
             android:textColor="@color/black"/>
 
         <Button
-            android:id="@+id/positive_button"
+            android:id="@+id/bt_entryTask"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
@@ -54,7 +54,7 @@
             android:text="議題"/>
 
         <EditText
-            android:id="@+id/DialogAgendaEdit"
+            android:id="@+id/et_dialogTask"
             android:layout_width="0dp"
             android:layout_height="30sp"
             android:layout_weight="5"
@@ -81,21 +81,21 @@
             android:text="時間" />
 
         <NumberPicker
-            android:id="@+id/DialogAgendaTimeNP_100"
+            android:id="@+id/np_dialogTime100th"
             android:layout_width="0dp"
             android:layout_height="60sp"
             android:layout_weight="1"
             android:clipToPadding="false"
             android:textSize="12sp" />
         <NumberPicker
-            android:id="@+id/DialogAgendaTimeNP_10"
+            android:id="@+id/np_dialogTime10th"
             android:layout_width="0dp"
             android:layout_height="60sp"
             android:layout_weight="1"
             android:layout_marginLeft="5dp"
             android:textSize="12sp" />
         <NumberPicker
-            android:id="@+id/DialogAgendaTimeNP_1"
+            android:id="@+id/np_dialogTime1th"
             android:layout_width="0dp"
             android:layout_height="60sp"
             android:layout_weight="1"

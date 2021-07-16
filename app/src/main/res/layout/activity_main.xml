@@ -10,7 +10,13 @@
             android:id="@+id/bt_createTask"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Button" />
+            android:text="やること新規作成" />
+
+        <Button
+            android:id="@+id/bt_test"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DB test" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -18,13 +24,12 @@
             android:orientation="horizontal">
 
             <ScrollView
-                android:id="@+id/scrollTask"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.5">
 
                 <LinearLayout
-                    android:id="@+id/rootCreatedTask"
+                    android:id="@+id/ll_rootCreatedTask"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical">
