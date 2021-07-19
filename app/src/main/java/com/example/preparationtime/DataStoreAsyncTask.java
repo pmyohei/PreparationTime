@@ -1,7 +1,10 @@
 package com.example.preparationtime;
 
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.LinearLayout;
+
+import java.util.List;
 
 /*
  * 非同期-DBアクセスクラス
@@ -16,36 +19,43 @@ public class DataStoreAsyncTask extends AsyncTask<Void, Void, Integer> {
         DELETE;         //削除
     }
 
+    private AppDatabase     db;
     private DB_OPERATION    operation;
     private int             p_key;
     private String          task;
     private int             taskTime;
     private LinearLayout    rootView;
+    private List<TaskTable> taskList;
+
+    private Listener listener;
 
     /*
      * コンストラクタ
      *   表示
      */
-    public DataStoreAsyncTask(DB_OPERATION operation, LinearLayout rootView){
+    public DataStoreAsyncTask(AppDatabase db, DB_OPERATION operation){
+        this.db        = db;
         this.operation = operation;
-        this.rootView  = rootView;
+        //this.rootView  = rootView;
     }
 
     /*
      * コンストラクタ
      *   生成
      */
-    public DataStoreAsyncTask(DB_OPERATION operation, String task, int taskTime){
+    public DataStoreAsyncTask(AppDatabase db, DB_OPERATION operation, String task, int taskTime){
+        this.db        = db;
         this.operation = operation;
-        this.task = task;
-        this.taskTime = taskTime;
+        this.task      = task;
+        this.taskTime  = taskTime;
     }
 
     /*
      * コンストラクタ
      *   更新
      */
-    public DataStoreAsyncTask(DB_OPERATION operation, int p_key, String task, int taskTime){
+    public DataStoreAsyncTask(AppDatabase db, DB_OPERATION operation, int p_key, String task, int taskTime){
+        this.db         = db;
         this.operation  = operation;
         this.p_key      = p_key;
         this.task       = task;
@@ -56,7 +66,8 @@ public class DataStoreAsyncTask extends AsyncTask<Void, Void, Integer> {
      * コンストラクタ
      *   削除
      */
-    public DataStoreAsyncTask(DB_OPERATION operation, int p_key){
+    public DataStoreAsyncTask(AppDatabase db, DB_OPERATION operation, int p_key){
+        this.db         = db;
         this.operation  = operation;
         this.p_key      = p_key;
     }
@@ -64,14 +75,16 @@ public class DataStoreAsyncTask extends AsyncTask<Void, Void, Integer> {
     @Override
     protected Integer doInBackground(Void... params) {
 
+        TaskTableDao taskTableDao = db.taskTableDao();
+
         //--操作種別に応じた処理
         if(this.operation == DB_OPERATION.CREATE){
             //登録
-            this.createTaskData();
+            this.createTaskData(taskTableDao);
 
         } else if(this.operation == DB_OPERATION.READ ){
             //表示
-            this.displayTaskData();
+            this.displayTaskData(taskTableDao);
 
         } else if(this.operation == DB_OPERATION.UPDATE ){
             //編集
@@ -88,18 +101,21 @@ public class DataStoreAsyncTask extends AsyncTask<Void, Void, Integer> {
         return 0;
     }
 
-    @Override
-    protected void onPostExecute(Integer code) {
-
+    /*
+     * 「やること」の生成処理
+     */
+    private void createTaskData( TaskTableDao dao ){
+        //DBに追加
+        dao.insert( new TaskTable( this.task, this.taskTime ) );
     }
-
 
     /*
      * 「やること」の表示処理
      */
-    private void displayTaskData(){
+    private void displayTaskData( TaskTableDao dao ){
 
-
+        //DBから、保存済みのタスクリストを取得
+        this.taskList = dao.getAll();
     }
 
     /*
@@ -109,18 +125,33 @@ public class DataStoreAsyncTask extends AsyncTask<Void, Void, Integer> {
 
     }
 
-
-    /*
-     * 「やること」の生成処理
-     */
-    private void createTaskData(){
-
-    }
-
     /*
      * 「やること」の削除処理
      */
     private void deleteTaskData(){
 
+    }
+
+    @Override
+    protected void onPostExecute(Integer code) {
+        super.onPostExecute(code);
+
+        if (listener != null) {
+            listener.onSuccess(this.taskList);
+        }
+    }
+
+    /*
+     * インターフェース（リスナー）の設定
+     */
+    void setListener(Listener listener) {
+        this.listener = listener;
+    }
+
+    /*
+     * 処理結果通知用のインターフェース
+     */
+    interface Listener {
+        void onSuccess( List<TaskTable> taskList );
     }
 }

@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentManager;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
@@ -15,14 +16,20 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.List;
 
+public class MainActivity extends AppCompatActivity implements DataStoreAsyncTask.Listener {
 
+    private AppDatabase db;                     //DB
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //DB操作インスタンスを取得
+        this.db = AppDatabaseSingleton.getInstance(getApplicationContext());
 
         //やること新規作成ボタン
         Button createTask = (Button)findViewById(R.id.bt_createTask);
@@ -38,8 +45,8 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.bt_test).setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //シングルトンでのDBアクセス
-                new DataStoreAsyncTask(DataStoreAsyncTask.DB_OPERATION.CREATE, "test", 10).execute();
+                //非同期-DBアクセス
+                //new DataStoreAsyncTask(db, DataStoreAsyncTask.DB_OPERATION.READ, findViewById(R.id.ll_rootCreatedTask)).execute();
             }
         });
         //test
@@ -69,54 +76,12 @@ public class MainActivity extends AppCompatActivity {
      */
     private void displayTaskList(){
 
-        //--「やること」のレイアウトインフレータを取得
-        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        //「やること」データのビュー
-        View taskLayout = inflater.inflate(R.layout.unit_task, null);
-
-        //-- 「やること」にリスナーを登録
-        //リスナー設定ビューの取得
-        LinearLayout ll_taskInfo = taskLayout.findViewById(R.id.ll_taskInfo);
-        //操作対象ビューの取得
-        LinearLayout ll_taskCtrl = taskLayout.findViewById(R.id.ll_taskCtrl);
-        //リスナー設定
-        ll_taskInfo.setOnClickListener(
-                new TaskCtrlListener( ll_taskCtrl )
-        );
-
-        //-- 「やること」データの表示内容を設定
-        //「やること」
-        TextView tv_data = taskLayout.findViewById(R.id.tv_taskName);
-        tv_data.setText("test");
-        //「やること」の時間
-        tv_data = taskLayout.findViewById(R.id.tv_taskTime);
-        tv_data.setText("test min");
-
-        //-- 「やること」データの操作用リスナーを設定
-        //アイコン-追加
-        Button bt_ctrl = (Button) taskLayout.findViewById(R.id.bt_addPreparation);
-        bt_ctrl.setOnClickListener(
-                new TaskCtrlAddListener()
-        );
-
-        //アイコン-編集
-        bt_ctrl = (Button) taskLayout.findViewById(R.id.bt_editTask);
-        bt_ctrl.setOnClickListener(
-                new TaskCtrlEditListener()
-        );
-
-        //アイコン-削除
-        bt_ctrl = (Button) taskLayout.findViewById(R.id.bt_deleteTask);
-        bt_ctrl.setOnClickListener(
-                new TaskCtrlDeleteListener()
-        );
-
-        //-- 「やること」データを表示先のビューに追加
-        LinearLayout ll_rootDisplay = (LinearLayout)findViewById(R.id.ll_rootCreatedTask);
-        ll_rootDisplay.addView(taskLayout);
+        DataStoreAsyncTask dataTask = new DataStoreAsyncTask(this.db, DataStoreAsyncTask.DB_OPERATION.READ);
+        //リスナーの設定
+        dataTask.setListener(this);
+        //非同期処理開始
+        dataTask.execute();
     }
-
-
 
     /*
      *  ---------------------------
@@ -191,6 +156,64 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View view) {
 
+        }
+    }
+
+    /*
+     * DB非同期処理の実行結果を取得
+     *   非同期処理のインターフェースとして実装
+     */
+    @Override
+    public void onSuccess(List<TaskTable> taskList) {
+
+        //DBから取得した「やること」を表示
+        for( TaskTable task: taskList ) {
+
+            //--「やること」のレイアウトインフレータを取得
+            LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            //「やること」データのビュー
+            View taskLayout = inflater.inflate(R.layout.unit_task, null);
+
+            //-- 「やること」にリスナーを登録
+            //リスナー設定ビューの取得
+            LinearLayout ll_taskInfo = taskLayout.findViewById(R.id.ll_taskInfo);
+            //操作対象ビューの取得
+            LinearLayout ll_taskCtrl = taskLayout.findViewById(R.id.ll_taskCtrl);
+            //リスナー設定
+            ll_taskInfo.setOnClickListener(
+                    new TaskCtrlListener(ll_taskCtrl)
+            );
+
+            //-- 「やること」データの表示内容を設定
+            //「やること」
+            TextView tv_data = taskLayout.findViewById(R.id.tv_taskName);
+            tv_data.setText(task.getTaskName());
+            //「やること」の時間
+            tv_data = taskLayout.findViewById(R.id.tv_taskTime);
+            tv_data.setText(task.getTaskTime() + " min");
+
+            //-- 「やること」データの操作用リスナーを設定
+            //アイコン-追加
+            Button bt_ctrl = (Button) taskLayout.findViewById(R.id.bt_addPreparation);
+            bt_ctrl.setOnClickListener(
+                    new TaskCtrlAddListener()
+            );
+
+            //アイコン-編集
+            bt_ctrl = (Button) taskLayout.findViewById(R.id.bt_editTask);
+            bt_ctrl.setOnClickListener(
+                    new TaskCtrlEditListener()
+            );
+
+            //アイコン-削除
+            bt_ctrl = (Button) taskLayout.findViewById(R.id.bt_deleteTask);
+            bt_ctrl.setOnClickListener(
+                    new TaskCtrlDeleteListener()
+            );
+
+            //-- 「やること」データを表示先のビューに追加
+            LinearLayout ll_rootDisplay = (LinearLayout) findViewById(R.id.ll_rootCreatedTask);
+            ll_rootDisplay.addView( taskLayout );
         }
     }
 }

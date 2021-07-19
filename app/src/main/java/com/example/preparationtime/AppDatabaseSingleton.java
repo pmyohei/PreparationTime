@@ -18,8 +18,17 @@ public class AppDatabaseSingleton {
         }
 
         //Roomクラスからインスタンスを生成
-        instance = Room.databaseBuilder(context,
-                AppDatabase.class, "database-task").build();
+        instance = Room.databaseBuilder(context, AppDatabase.class, "database-task").build();
         return instance;
     }
+
+    /*
+     * インスタンス取得(ダイアログ用)
+     *   ※使用していいのは、getInstance()がコールされたあと
+     */
+    public static AppDatabase getInstanceNotFirst() {
+
+        return instance;
+    }
+
 }

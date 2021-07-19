@@ -5,17 +5,15 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.NumberPicker;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
 
@@ -83,8 +81,23 @@ public class CreateTaskDialog extends DialogFragment {
         btEntry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //★DBへ保存
 
+                //-- DBへ保存
+                //タスク名を取得
+                String task = ((EditText)dialog.findViewById(R.id.et_dialogTask)).getText().toString();
+
+                //時間を取得
+                int time;
+                NumberPicker inputTime = (NumberPicker) dialog.findViewById(R.id.np_dialogTime100th);
+                time = inputTime.getValue() * 100;
+                inputTime = (NumberPicker) dialog.findViewById(R.id.np_dialogTime10th);
+                time += inputTime.getValue() * 10;
+                inputTime = (NumberPicker) dialog.findViewById(R.id.np_dialogTime1th);
+                time += inputTime.getValue();
+
+                //DBへ保存
+                AppDatabase db = AppDatabaseSingleton.getInstanceNotFirst();
+                new DataStoreAsyncTask(db, DataStoreAsyncTask.DB_OPERATION.CREATE, task, time).execute();
             }
         });
 
