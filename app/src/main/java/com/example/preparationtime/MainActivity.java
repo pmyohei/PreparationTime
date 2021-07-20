@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
@@ -76,12 +78,10 @@ public class MainActivity extends AppCompatActivity implements DataStoreAsyncTas
      */
     private void displayTaskList(){
 
-        DataStoreAsyncTask dataTask = new DataStoreAsyncTask(this.db, DataStoreAsyncTask.DB_OPERATION.READ);
-        //リスナーの設定
-        dataTask.setListener(this);
-        //非同期処理開始
-        dataTask.execute();
+        //非同期スレッドにて、読み込み開始
+        new DataStoreAsyncTask(this.db, this, DataStoreAsyncTask.DB_OPERATION.READ).execute();
     }
+
 
     /*
      *  ---------------------------
@@ -148,23 +148,50 @@ public class MainActivity extends AppCompatActivity implements DataStoreAsyncTas
         }
     }
 
-    /*
+    /*TaskCtrlDeleteListener
      * 「やること」-削除アイコンリスナー
      */
     private class TaskCtrlDeleteListener implements View.OnClickListener {
 
+        private View rootView;      //「やること」レイアウトのビュー
+
+        public TaskCtrlDeleteListener( View v ){
+            this.rootView = v;
+        }
+
         @Override
         public void onClick(View view) {
+            //---- 削除確認ダイアログを生成
 
+            //--選択されたやることをダイアログへ渡す
+            //「やること」情報
+            String taskName = ((TextView)this.rootView.findViewById(R.id.tv_taskName)).getText().toString();
+            String taskTimeStr = ((TextView)this.rootView.findViewById(R.id.tv_taskTime)).getText().toString();
+
+            taskTimeStr = taskTimeStr.replace(" min", "");
+            int taskTime = Integer.parseInt(taskTimeStr);
+
+            //渡すデータ設定
+            Bundle bundle = new Bundle();
+            bundle.putString("TaskName", taskName);
+            bundle.putInt("TaskTime", taskTime);
+
+            //FragmentManager生成
+            FragmentManager transaction = getSupportFragmentManager();
+
+            //ダイアログを生成
+            DialogFragment dialog = new DeleteTaskDialog();
+            dialog.setArguments(bundle);
+            dialog.show(transaction, "DeleteTask");
         }
     }
 
     /*
-     * DB非同期処理の実行結果を取得
+     * DB非同期処理の実行結果
      *   非同期処理のインターフェースとして実装
      */
     @Override
-    public void onSuccess(List<TaskTable> taskList) {
+    public void onSuccessRead(List<TaskTable> taskList) {
 
         //DBから取得した「やること」を表示
         for( TaskTable task: taskList ) {
@@ -208,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements DataStoreAsyncTas
             //アイコン-削除
             bt_ctrl = (Button) taskLayout.findViewById(R.id.bt_deleteTask);
             bt_ctrl.setOnClickListener(
-                    new TaskCtrlDeleteListener()
+                    new TaskCtrlDeleteListener( (View)taskLayout )
             );
 
             //-- 「やること」データを表示先のビューに追加
@@ -216,4 +243,33 @@ public class MainActivity extends AppCompatActivity implements DataStoreAsyncTas
             ll_rootDisplay.addView( taskLayout );
         }
     }
+
+    /*
+     * DB非同期処理の実行結果
+     *   非同期処理のインターフェースとして実装
+     */
+    @Override
+    public void onSuccessCreate(Integer code) {
+
+        //登録
+        Log.i("test", "onSuccessCreate=" + code);
+
+        return;
+    }
+
+    /*
+     * DB非同期処理の実行結果
+     *   非同期処理のインターフェースとして実装
+     */
+    @Override
+    public void onSuccessDelete() {
+
+        //-- 削除した「やること」のレイアウトを削除
+        Log.i("test", "onSuccessDelete");
+
+        return;
+    }
+
+
+
 }

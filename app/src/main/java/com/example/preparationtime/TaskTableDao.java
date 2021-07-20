@@ -18,6 +18,20 @@ public interface TaskTableDao {
     @Query("SELECT * FROM taskTable WHERE id IN (:ids)")
     List<TaskTable> loadAllByIds(int[] ids);
 
+    /*
+     * 取得：プライマリーキー
+     *   ※未登録の場合、プライマリーキーは「0」が返される（実証）
+     *     ＝プライマリーキーは「１」から割り当てられる
+     */
+    @Query("SELECT id FROM taskTable WHERE task_name=(:taskName) and task_time=(:taskTime)")
+    int getPid(String taskName, int taskTime);
+
+    /*
+     * 削除：プライマリーキー指定
+     */
+    @Query("DELETE FROM taskTable WHERE id=(:pid)")
+    void deleteByPid(int pid);
+
     @Insert
     void insertAll(TaskTable... taskTables);
 

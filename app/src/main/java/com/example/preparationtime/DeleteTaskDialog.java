@@ -1,6 +1,7 @@
 package com.example.preparationtime;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -15,37 +16,57 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.NumberPicker;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
 
 /*
  * 「やること」新規生成のダイアログ
  */
-public class CreateTaskDialog extends DialogFragment {
+public class DeleteTaskDialog extends DialogFragment {
 
-    public CreateTaskDialog() {
+    public DeleteTaskDialog() {
         // Required empty public constructor
     }
-
+    /*
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         //ダイアログにレイアウトを設定
         return inflater.inflate(R.layout.dialog_create_task, container, false);
     }
+    */
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState){
-        //ダイアログ取得
-        Dialog dialog = super.onCreateDialog(savedInstanceState);
-        //背景を透明にする(デフォルトテーマに付いている影などを消す) ※これをしないと、画面横サイズまで拡張されない
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        //アニメーションを設定
-        dialog.getWindow().getAttributes().windowAnimations = R.style.dialogAnimation;
+        //Builder取得
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        //ダイアログを返す
-        return dialog;
+        //--呼び出し元から情報を取得
+        String taskName = getArguments().getString("TaskName");
+        int taskTime    = getArguments().getInt("TaskTime");
+
+        Log.i("test", "delete=" + taskName + taskTime);
+
+        //表示内容の設定
+        builder.setMessage("削除しますか？" + taskName + " " + taskTime + " min")
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //DBから削除
+                        AppDatabase db = AppDatabaseSingleton.getInstanceNotFirst();
+                        new DataStoreAsyncTask(db, (MainActivity) getActivity(), DataStoreAsyncTask.DB_OPERATION.DELETE, taskName, taskTime).execute();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //do nothing
+                    }
+                });
+
+        //ダイアログを生成し、返す
+        return builder.create();
     }
 
+    /*
     @Override
     public void onStart() {
         super.onStart();
@@ -96,17 +117,13 @@ public class CreateTaskDialog extends DialogFragment {
                 inputTime = (NumberPicker) dialog.findViewById(R.id.np_dialogTime1th);
                 time += inputTime.getValue();
 
-                //DB取得
+                //DBへ保存
                 AppDatabase db = AppDatabaseSingleton.getInstanceNotFirst();
-                //新規生成
-                new DataStoreAsyncTask(db, (MainActivity) getActivity(), DataStoreAsyncTask.DB_OPERATION.CREATE, task, time).execute();
-
-                //ダイアログ閉じる
-                dismiss();
+                new DataStoreAsyncTask(db, DataStoreAsyncTask.DB_OPERATION.CREATE, task, time).execute();
             }
         });
 
         return;
     }
-
+    */
 }
