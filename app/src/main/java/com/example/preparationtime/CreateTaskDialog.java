@@ -14,6 +14,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.NumberPicker;
+import android.widget.TextView;
 
 import androidx.fragment.app.DialogFragment;
 
@@ -23,8 +24,16 @@ import androidx.fragment.app.DialogFragment;
  */
 public class CreateTaskDialog extends DialogFragment {
 
+    private boolean updateFlg;          //更新フラグ
+    private String  preTask;            //更新前-「やること」
+    private int     preTaskTime;        //更新前-「やること時間」
+
+    /*
+     * コンストラクタ
+     */
     public CreateTaskDialog() {
-        // Required empty public constructor
+        //初期値：非更新
+        this.updateFlg = false;
     }
 
     @Override
@@ -77,15 +86,34 @@ public class CreateTaskDialog extends DialogFragment {
         np1th.setMaxValue(9);
         np1th.setMinValue(0);
 
+        //呼び出し元から情報を取得
+        this.preTask        = getArguments().getString("TaskName");
+        this.preTaskTime    = getArguments().getInt("TaskTime");
+
+        //更新であれば
+        if( this.preTask != null ){
+            //-- 入力済みデータの設定
+            //「やること」
+            EditText et_task = (EditText) dialog.findViewById(R.id.et_dialogTask);
+            et_task.setText(this.preTask);
+
+            //「やることの時間」
+            np100th.setValue( this.preTaskTime / 100 );
+            np10th.setValue( (this.preTaskTime / 10) % 10 );
+            np1th.setValue( this.preTaskTime % 10 );
+
+            //更新フラグを「更新」に
+            this.updateFlg = true;
+        }
+
         //-- 「保存ボタン」のリスナー設定
         Button btEntry = (Button)dialog.findViewById(R.id.bt_entryTask);
         btEntry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                //-- DBへ保存
                 //タスク名を取得
-                String task = ((EditText)dialog.findViewById(R.id.et_dialogTask)).getText().toString();
+                String task = ((EditText) dialog.findViewById(R.id.et_dialogTask)).getText().toString();
 
                 //時間を取得
                 int time;
@@ -96,13 +124,32 @@ public class CreateTaskDialog extends DialogFragment {
                 inputTime = (NumberPicker) dialog.findViewById(R.id.np_dialogTime1th);
                 time += inputTime.getValue();
 
-                //DB取得
-                AppDatabase db = AppDatabaseSingleton.getInstanceNotFirst();
-                //新規生成
-                new DataStoreAsyncTask(db, (MainActivity) getActivity(), DataStoreAsyncTask.DB_OPERATION.CREATE, task, time).execute();
+                //-- フォーマットチェック
+                if ((task == "") || (time == 0)) {
+                    //未入力の場合、エラー表示
+                    ((TextView) dialog.findViewById(R.id.tv_alert)).setText("未入力です");
 
-                //ダイアログ閉じる
-                dismiss();
+                } else {
+                    //正常入力されれば、エラー表示をクリア
+                    ((TextView) dialog.findViewById(R.id.tv_alert)).setText("");
+
+                    //-- DBへ保存
+                    //DB取得
+                    AppDatabase db = AppDatabaseSingleton.getInstanceNotFirst();
+
+                    //新規作成か更新か
+                    if (updateFlg) {
+                        //更新
+                        new DataStoreAsyncTask(db, (MainActivity) getActivity(), DataStoreAsyncTask.DB_OPERATION.UPDATE, preTask, preTaskTime, task, time).execute();
+
+                    } else {
+                        //新規生成
+                        new DataStoreAsyncTask(db, (MainActivity) getActivity(), DataStoreAsyncTask.DB_OPERATION.CREATE, task, time).execute();
+                    }
+
+                    //ダイアログ閉じる
+                    dismiss();
+                }
             }
         });
 

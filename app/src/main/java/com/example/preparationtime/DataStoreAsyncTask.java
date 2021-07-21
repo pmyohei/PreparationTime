@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class DataStoreAsyncTask extends AsyncTask<Void, Void, Integer> {
 
-    //DB操作種別
+    //-- DB操作種別
     public enum DB_OPERATION {
         CREATE,         //生成
         READ,           //参照
@@ -22,12 +22,12 @@ public class DataStoreAsyncTask extends AsyncTask<Void, Void, Integer> {
     private AppDatabase     db;
     private DB_OPERATION    operation;
     private int             p_key;
+    private String          preTask;
+    private int             preTaskTime;
     private String          task;
     private int             taskTime;
-    private LinearLayout    rootView;
     private List<TaskTable> taskList;
-
-    private Listener listener;
+    private Listener        listener;
 
     /*
      * コンストラクタ
@@ -37,7 +37,6 @@ public class DataStoreAsyncTask extends AsyncTask<Void, Void, Integer> {
         this.db        = db;
         this.listener  = listener;
         this.operation = operation;
-        //this.rootView  = rootView;
     }
 
     /*
@@ -56,13 +55,14 @@ public class DataStoreAsyncTask extends AsyncTask<Void, Void, Integer> {
      * コンストラクタ
      *   更新
      */
-    public DataStoreAsyncTask(AppDatabase db, Listener listener, DB_OPERATION operation, int p_key, String task, int taskTime){
-        this.db         = db;
-        this.listener  = listener;
-        this.operation  = operation;
-        this.p_key      = p_key;
-        this.task       = task;
-        this.taskTime   = taskTime;
+    public DataStoreAsyncTask(AppDatabase db, Listener listener, DB_OPERATION operation, String preTask, int preTaskTime, String task, int taskTime){
+        this.db             = db;
+        this.listener       = listener;
+        this.operation      = operation;
+        this.preTask        = preTask;
+        this.preTaskTime    = preTaskTime;
+        this.task           = task;
+        this.taskTime       = taskTime;
     }
 
     /*
@@ -71,7 +71,7 @@ public class DataStoreAsyncTask extends AsyncTask<Void, Void, Integer> {
      */
     public DataStoreAsyncTask(AppDatabase db, Listener listener, DB_OPERATION operation, int p_key){
         this.db         = db;
-        this.listener  = listener;
+        this.listener   = listener;
         this.operation  = operation;
         this.p_key      = p_key;
     }
@@ -94,7 +94,7 @@ public class DataStoreAsyncTask extends AsyncTask<Void, Void, Integer> {
 
         } else if(this.operation == DB_OPERATION.UPDATE ){
             //編集
-            this.updateTaskData();
+            this.updateTaskData(taskTableDao);
 
         } else if(this.operation == DB_OPERATION.DELETE ){
             //削除
@@ -139,8 +139,12 @@ public class DataStoreAsyncTask extends AsyncTask<Void, Void, Integer> {
     /*
      * 「やること」の編集処理
      */
-    private void updateTaskData(){
+    private void updateTaskData( TaskTableDao dao ){
+        //更新対象のPidを取得
+        int pid = dao.getPid( this.preTask, this.preTaskTime );
 
+        //更新
+        dao.updateByPid( pid, this.task, this.taskTime );
     }
 
     /*
@@ -172,6 +176,13 @@ public class DataStoreAsyncTask extends AsyncTask<Void, Void, Integer> {
             } else if( this.operation == DB_OPERATION.DELETE ){
                 //処理終了：削除
                 listener.onSuccessDelete();
+
+            } else if( this.operation == DB_OPERATION.UPDATE ){
+                //処理終了：更新
+                listener.onSuccessUpdate();
+
+            } else {
+                //do nothing
             }
         }
     }
@@ -203,5 +214,11 @@ public class DataStoreAsyncTask extends AsyncTask<Void, Void, Integer> {
          * 削除完了時
          */
         void onSuccessDelete();
+
+        /*
+         * 更新完了時
+         */
+        void onSuccessUpdate();
+
     }
 }

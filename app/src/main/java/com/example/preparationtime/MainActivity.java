@@ -5,9 +5,11 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +19,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -43,7 +46,15 @@ public class MainActivity extends AppCompatActivity implements DataStoreAsyncTas
             }
         });
 
-        //test
+        //-- test
+        findViewById(R.id.button2).setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, DummyActivity.class);
+                startActivity(intent);
+            }
+        });
+
         findViewById(R.id.bt_test).setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -51,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements DataStoreAsyncTas
                 //new DataStoreAsyncTask(db, DataStoreAsyncTask.DB_OPERATION.READ, findViewById(R.id.ll_rootCreatedTask)).execute();
             }
         });
-        //test
+        //-- test
 
         //登録されている「やること」を表示
         this.displayTaskList();
@@ -142,9 +153,39 @@ public class MainActivity extends AppCompatActivity implements DataStoreAsyncTas
      */
     private class TaskCtrlEditListener implements View.OnClickListener {
 
+        private View rootView;      //「やること」レイアウトのビュー
+
+        /*
+         * コンストラクタ
+         */
+        public TaskCtrlEditListener( View v ){
+            this.rootView = v;
+        }
+
         @Override
         public void onClick(View view) {
+            //---- 更新ダイアログを生成
 
+            //--選択されたやることをダイアログへ渡す
+            //「やること」情報
+            String taskName = ((TextView)this.rootView.findViewById(R.id.tv_taskName)).getText().toString();
+            String taskTimeStr = ((TextView)this.rootView.findViewById(R.id.tv_taskTime)).getText().toString();
+
+            taskTimeStr = taskTimeStr.replace(" min", "");
+            int taskTime = Integer.parseInt(taskTimeStr);
+
+            //渡すデータ設定
+            Bundle bundle = new Bundle();
+            bundle.putString("TaskName", taskName);
+            bundle.putInt("TaskTime", taskTime);
+
+            //FragmentManager生成
+            FragmentManager transaction = getSupportFragmentManager();
+
+            //ダイアログを生成
+            DialogFragment dialog = new CreateTaskDialog();
+            dialog.setArguments(bundle);
+            dialog.show(transaction, "UpdateTask");
         }
     }
 
@@ -229,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements DataStoreAsyncTas
             //アイコン-編集
             bt_ctrl = (Button) taskLayout.findViewById(R.id.bt_editTask);
             bt_ctrl.setOnClickListener(
-                    new TaskCtrlEditListener()
+                    new TaskCtrlEditListener( (View)taskLayout )
             );
 
             //アイコン-削除
@@ -251,8 +292,24 @@ public class MainActivity extends AppCompatActivity implements DataStoreAsyncTas
     @Override
     public void onSuccessCreate(Integer code) {
 
-        //登録
-        Log.i("test", "onSuccessCreate=" + code);
+        //結果メッセージ
+        String message;
+
+        //戻り値に応じてトースト表示
+        if( code == -1 ){
+            //エラーメッセージを表示
+            message = "登録済みです";
+
+        } else {
+            //正常メッセージを表示
+            message = "登録しました";
+        }
+
+        //結果を表示
+        Toast toast = new Toast(getApplicationContext());
+        toast.setText(message);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        toast.show();
 
         return;
     }
@@ -270,6 +327,17 @@ public class MainActivity extends AppCompatActivity implements DataStoreAsyncTas
         return;
     }
 
+    /*
+     * DB非同期処理の実行結果
+     *   非同期処理のインターフェースとして実装
+     */
+    @Override
+    public void onSuccessUpdate() {
 
+        //-- 削除した「やること」のレイアウトを削除
+        Log.i("test", "onSuccessUpdate");
+
+        return;
+    }
 
 }
