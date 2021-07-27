@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey;
 
 /*
  * エンティティ
- *   テーブルに相当する
+ *   テーブルに相当
  */
 @Entity
 public class TaskTable {

@@ -6,17 +6,17 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-        <Button
-            android:id="@+id/bt_createTask"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="やること新規作成" />
+    <Button
+        android:id="@+id/bt_createTask"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="やること新規作成" />
 
     <Button
         android:id="@+id/button2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="別画面へ" />
+        android:text="やることセット" />
 
     <Button
             android:id="@+id/bt_test"

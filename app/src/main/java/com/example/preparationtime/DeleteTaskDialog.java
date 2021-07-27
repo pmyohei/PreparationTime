@@ -2,19 +2,7 @@ package com.example.preparationtime;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.NumberPicker;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
@@ -51,7 +39,7 @@ public class DeleteTaskDialog extends DialogFragment {
                     public void onClick(DialogInterface dialog, int id) {
                         //DBから削除
                         AppDatabase db = AppDatabaseSingleton.getInstanceNotFirst();
-                        new DataStoreAsyncTask(db, (MainActivity) getActivity(), DataStoreAsyncTask.DB_OPERATION.DELETE, taskName, taskTime).execute();
+                        new AsyncTaskTableOperaion(db, (MainActivity) getActivity(), AsyncTaskTableOperaion.DB_OPERATION.DELETE, taskName, taskTime).execute();
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

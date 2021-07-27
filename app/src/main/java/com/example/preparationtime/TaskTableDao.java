@@ -7,8 +7,8 @@ import androidx.room.Insert;
 import androidx.room.Query;
 
 /*
- * DAO の定義
- *   これを介して、DB操作を行う。
+ * DAO の定義：やることテーブル
+ *   DB操作の仲介役
  */
 @Dao
 public interface TaskTableDao {

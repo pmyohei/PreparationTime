@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +13,6 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import androidx.fragment.app.DialogFragment;
@@ -21,16 +21,15 @@ import androidx.fragment.app.DialogFragment;
 /*
  * 「やること」新規生成のダイアログ
  */
-public class CreateTaskDialog extends DialogFragment {
+public class CreateSetDialog extends DialogFragment {
 
     private boolean updateFlg;          //更新フラグ
-    private String  preTask;            //更新前-「やること」
-    private int     preTaskTime;        //更新前-「やること時間」
+    private String  preSet;             //更新前-「やることセット名」
 
     /*
      * コンストラクタ
      */
-    public CreateTaskDialog() {
+    public CreateSetDialog() {
         //初期値：非更新
         this.updateFlg = false;
     }
@@ -38,7 +37,7 @@ public class CreateTaskDialog extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         //ダイアログにレイアウトを設定
-        return inflater.inflate(R.layout.dialog_create_task, container, false);
+        return inflater.inflate(R.layout.dialog_create_taskset, container, false);
     }
 
     @Override
@@ -72,59 +71,32 @@ public class CreateTaskDialog extends DialogFragment {
         dialog.getWindow().setAttributes(lp);
 
         //---- ビューの設定も本メソッドで行う必要あり（onCreateDialog()内だと落ちる）
-        //-- NumberPicker の設定
-        //ビュー取得
-        NumberPicker np100th = (NumberPicker) dialog.findViewById(R.id.np_dialogTime100th);
-        NumberPicker np10th  = (NumberPicker) dialog.findViewById(R.id.np_dialogTime10th);
-        NumberPicker np1th   = (NumberPicker) dialog.findViewById(R.id.np_dialogTime1th);
-        //値の範囲を設定
-        np100th.setMaxValue(9);
-        np100th.setMinValue(0);
-        np10th.setMaxValue(9);
-        np10th.setMinValue(0);
-        np1th.setMaxValue(9);
-        np1th.setMinValue(0);
 
         //呼び出し元から情報を取得
-        this.preTask        = getArguments().getString("TaskName");
-        this.preTaskTime    = getArguments().getInt("TaskTime");
+        this.preSet = getArguments().getString("TaskSetName");
 
         //更新であれば
-        if( this.preTask != null ){
+        if( this.preSet != null ){
             //-- 入力済みデータの設定
-            //「やること」
-            EditText et_task = (EditText) dialog.findViewById(R.id.et_dialogTask);
-            et_task.setText(this.preTask);
-
-            //「やることの時間」
-            np100th.setValue( this.preTaskTime / 100 );
-            np10th.setValue( (this.preTaskTime / 10) % 10 );
-            np1th.setValue( this.preTaskTime % 10 );
+            //「やることセット」
+            EditText et_task = (EditText) dialog.findViewById(R.id.et_dialogTaskSet);
+            et_task.setText(this.preSet);
 
             //更新フラグを「更新」に
             this.updateFlg = true;
         }
 
         //-- 「保存ボタン」のリスナー設定
-        Button btEntry = (Button)dialog.findViewById(R.id.bt_entryTask);
+        Button btEntry = (Button)dialog.findViewById(R.id.bt_entryTaskSet);
         btEntry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                //タスク名を取得
-                String task = ((EditText) dialog.findViewById(R.id.et_dialogTask)).getText().toString();
-
-                //時間を取得
-                int time;
-                NumberPicker inputTime = (NumberPicker) dialog.findViewById(R.id.np_dialogTime100th);
-                time = inputTime.getValue() * 100;
-                inputTime = (NumberPicker) dialog.findViewById(R.id.np_dialogTime10th);
-                time += inputTime.getValue() * 10;
-                inputTime = (NumberPicker) dialog.findViewById(R.id.np_dialogTime1th);
-                time += inputTime.getValue();
+                //セット名を取得
+                String taskSet = ((EditText) dialog.findViewById(R.id.et_dialogTaskSet)).getText().toString();
 
                 //-- フォーマットチェック
-                if ((task == "") || (time == 0)) {
+                if (taskSet == "") {
                     //未入力の場合、エラー表示
                     ((TextView) dialog.findViewById(R.id.tv_alert)).setText("未入力です");
 
@@ -139,11 +111,12 @@ public class CreateTaskDialog extends DialogFragment {
                     //新規作成か更新か
                     if (updateFlg) {
                         //更新
-                        new AsyncTaskTableOperaion(db, (MainActivity) getActivity(), AsyncTaskTableOperaion.DB_OPERATION.UPDATE, preTask, preTaskTime, task, time).execute();
+                        new AsyncSetTableOperaion(db, (SetManageActivity) getActivity(), AsyncSetTableOperaion.DB_OPERATION.UPDATE, preSet, taskSet).execute();
 
                     } else {
+                        Log.i("test", "save");
                         //新規生成
-                        new AsyncTaskTableOperaion(db, (MainActivity) getActivity(), AsyncTaskTableOperaion.DB_OPERATION.CREATE, task, time).execute();
+                        new AsyncSetTableOperaion(db, (SetManageActivity) getActivity(), AsyncSetTableOperaion.DB_OPERATION.CREATE, taskSet).execute();
                     }
 
                     //ダイアログ閉じる
