@@ -12,29 +12,17 @@
         android:layout_height="wrap_content"
         android:text="セットの作成" />
 
-    <LinearLayout
+    <Button
+        android:id="@+id/testaddbt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="セットへやること追加" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_setList"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.5"
-        android:orientation="horizontal">
-
-        <ListView
-            android:id="@+id/lv_task"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.5"
-            android:divider="@null"
-            android:dividerHeight="10dp">
-        </ListView>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.5"
-            android:orientation="vertical">
-
-        </LinearLayout>
-    </LinearLayout>
+        android:layout_weight="0.8"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_taskList"

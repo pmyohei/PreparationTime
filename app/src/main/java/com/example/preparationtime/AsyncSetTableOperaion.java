@@ -15,14 +15,18 @@ public class AsyncSetTableOperaion extends AsyncTask<Void, Void, Integer> {
         CREATE,         //生成
         READ,           //参照
         UPDATE,         //更新
-        DELETE;         //削除
+        DELETE,         //削除
+        ADD_TASK,       //やることを追加
+        DELETE_TASK;    //やることを削除
     }
 
     private AppDatabase                 db;
     private DB_OPERATION                operation;
-    private String                      preSet;
-    private String                      set;
+    private String                      preSetName;
+    private String                      setName;
     private List<SetTable>              setList;
+    private List<List<TaskTable>>       tasksList;
+    private int                         selectedTaskPid;
     private SetOperationListener        listener;
 
     /*
@@ -39,23 +43,23 @@ public class AsyncSetTableOperaion extends AsyncTask<Void, Void, Integer> {
      * コンストラクタ
      *   生成・削除
      */
-    public AsyncSetTableOperaion(AppDatabase db, SetOperationListener listener, DB_OPERATION operation, String set){
-        this.db        = db;
-        this.listener  = listener;
-        this.operation = operation;
-        this.set = set;
+    public AsyncSetTableOperaion(AppDatabase db, SetOperationListener listener, DB_OPERATION operation, String setName){
+        this.db         = db;
+        this.listener   = listener;
+        this.operation  = operation;
+        this.setName    = setName;
     }
 
     /*
      * コンストラクタ
      *   更新
      */
-    public AsyncSetTableOperaion(AppDatabase db, SetOperationListener listener, DB_OPERATION operation, String preSet, String set){
+    public AsyncSetTableOperaion(AppDatabase db, SetOperationListener listener, DB_OPERATION operation, String preSetName, String setName){
         this.db             = db;
         this.listener       = listener;
         this.operation      = operation;
-        this.preSet = preSet;
-        this.set = set;
+        this.preSetName     = preSetName;
+        this.setName        = setName;
     }
 
     @Override
@@ -63,7 +67,7 @@ public class AsyncSetTableOperaion extends AsyncTask<Void, Void, Integer> {
 
         Integer ret = 0;
 
-        SetTableDao setTableDao = db.setTableDao();
+        SetTableDao setTableDao   = db.setTableDao();
 
         //--操作種別に応じた処理
         if(this.operation == DB_OPERATION.CREATE){
@@ -72,7 +76,6 @@ public class AsyncSetTableOperaion extends AsyncTask<Void, Void, Integer> {
 
         } else if(this.operation == DB_OPERATION.READ ){
             //表示
-            Log.i("test", "READ");
             this.displaySetData(setTableDao);
 
         } else if(this.operation == DB_OPERATION.UPDATE ){
@@ -82,6 +85,14 @@ public class AsyncSetTableOperaion extends AsyncTask<Void, Void, Integer> {
         } else if(this.operation == DB_OPERATION.DELETE ){
             //削除
             this.deleteSetData(setTableDao);
+
+        } else if(this.operation == DB_OPERATION.ADD_TASK ){
+            //やること追加
+            this.addTaskToSet(setTableDao);
+
+        } else if(this.operation == DB_OPERATION.DELETE_TASK ){
+            //やること削除
+            this.deleteTaskInSet(setTableDao);
 
         } else{
             //do nothing
@@ -96,72 +107,125 @@ public class AsyncSetTableOperaion extends AsyncTask<Void, Void, Integer> {
     private Integer createSetData(SetTableDao dao ){
 
         //プライマリーキー取得
-        int pid = dao.getPid( this.set);
-        Log.i("test", "pid=" + pid);
+        int pid = dao.getPid( this.setName);
+        Log.i("test", "set pid=" + pid);
         if( pid > 0 ){
             //すでに登録済みであれば、DBには追加しない
             return -1;
         }
 
         //DBに追加
-        dao.insert( new SetTable( this.set) );
+        dao.insert( new SetTable( this.setName) );
         //正常終了
         return 0;
     }
 
     /*
-     * 「やること」の表示処理
+     * 「やることセット」の表示処理
      */
     private void displaySetData(SetTableDao dao ){
 
-        //DBから、保存済みのタスクリストを取得
+        TaskTableDao taskTableDao = this.db.taskTableDao();
+
+        //DBから、保存済みのセットリストを取得
         this.setList = dao.getAll();
+
+        //-- 各セットの「選択済みやること」をリスト化する
+        for( SetTable setInfo: this.setList ){
+
+        }
+
+
+
+
+
     }
 
     /*
-     * 「やること」の編集処理
+     * 「やることセット」の編集処理
      */
     private void updateSetData(SetTableDao dao ){
         //更新対象のPidを取得
-        int pid = dao.getPid( this.preSet);
+        int pid = dao.getPid( this.preSetName);
 
         //更新
-        dao.updateByPid( pid, this.set);
+        dao.updateSetNameByPid( pid, this.setName);
     }
 
     /*
-     * 「やること」の削除処理
+     * 「やることセット」の削除処理
      */
     private void deleteSetData(SetTableDao dao ){
         //Pidを取得
-        int pid = dao.getPid( this.set);
+        int pid = dao.getPid( this.setName);
 
         //削除
         dao.deleteByPid( pid );
+    }
+
+    /*
+     * 「やることセット」の追加処理
+     */
+    private Integer addTaskToSet(SetTableDao dao ){
+
+        //追加先セットのPidを取得
+        int setPid = dao.getPid( this.setName);
+
+        //選択済みの「やること」を取得
+        String taskPidsStr = dao.getTaskPidsStr(setPid);
+
+        //「やること」Pidを文字列に追加
+        taskPidsStr = SetTable.addTaskPidsStr(taskPidsStr, this.selectedTaskPid);
+        if( taskPidsStr == null ){
+            //既に追加済みなら、何もせず終了
+            return -1;
+        }
+
+        //選択済みの「やること」を更新
+        dao.updateTaskPidsStrByPid(setPid, taskPidsStr);
+
+        //正常終了
+        return 0;
+    }
+
+    /*
+     * 「やることセット」の削除
+     */
+    private void deleteTaskInSet(SetTableDao dao ) {
+
+        //選択済みの「やること」を取得
+        int setPid = dao.getPid( this.setName);
+        String taskPidsStr = dao.getTaskPidsStr(setPid);
+
+        //「やること」Pidを文字列から削除
+        taskPidsStr = SetTable.deleteTaskPidInStr(taskPidsStr, this.selectedTaskPid);
+
+        //選択済みの「やること」を更新
+        dao.updateTaskPidsStrByPid(setPid, taskPidsStr);
     }
 
     @Override
     protected void onPostExecute(Integer code) {
         //super.onPostExecute(code);
 
-        //リスナーを実装していれば、成功後の処理を行う
+        //リスナーを実装していれば、処理に対応する後処理を行う
         if (listener != null) {
 
             if( this.operation == DB_OPERATION.READ ){
                 //処理終了：読み込み
-                listener.onSuccessSetRead(this.setList);
+                listener.onSuccessSetRead(this.setList, this.tasksList);
 
             } else if( this.operation == DB_OPERATION.CREATE ){
                 //処理終了：新規作成
-                listener.onSuccessSetCreate(code, this.set);
+                listener.onSuccessSetCreate(code, this.setName);
 
             } else if( this.operation == DB_OPERATION.DELETE ){
                 //処理終了：削除
-                listener.onSuccessSetDelete(this.set);
+                listener.onSuccessSetDelete(this.setName);
 
             } else if( this.operation == DB_OPERATION.UPDATE ){
                 //処理終了：更新
-                listener.onSuccessSetUpdate(this.preSet, this.set);
+                listener.onSuccessSetUpdate(this.preSetName, this.setName);
 
             } else {
                 //do nothing
@@ -185,7 +249,7 @@ public class AsyncSetTableOperaion extends AsyncTask<Void, Void, Integer> {
         /*
          * 取得完了時
          */
-        void onSuccessSetRead(List<SetTable> taskSetList );
+        void onSuccessSetRead(List<SetTable> taskSetList, List<List<TaskTable>> tasksList );
 
         /*
          * 新規生成完了時

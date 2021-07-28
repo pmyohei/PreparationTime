@@ -6,7 +6,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,15 +13,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class SetManageActivity extends AppCompatActivity implements AsyncSetTableOperaion.SetOperationListener, AsyncTaskTableOperaion.TaskOperationListener {
+public class SetManageActivity extends AppCompatActivity implements AsyncSetTableOperaion.SetOperationListener,
+                                                                    AsyncTaskTableOperaion.TaskOperationListener {
 
     private AppDatabase     db;                     //DB
 //    private LinearLayout    ll_rootDisplay;         //「やること」表示元のビューID
@@ -46,6 +44,15 @@ public class SetManageActivity extends AppCompatActivity implements AsyncSetTabl
 
                 //やることセット登録ダイアログの生成
                 createTaskSetDialog();
+            }
+        });
+
+        findViewById(R.id.testaddbt).setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                //セットへやることを追加
+
             }
         });
         //--
@@ -186,20 +193,50 @@ public class SetManageActivity extends AppCompatActivity implements AsyncSetTabl
      */
 
     @Override
-    public void onSuccessSetRead(List<SetTable> taskSetList) {
-        /*
+    public void onSuccessSetRead(List<SetTable> setList, List<List<TaskTable>> tasksList) {
+        //-- 「やることセット」の表示
+        //レイアウトからリストビューを取得
+        RecyclerView rv  = (RecyclerView) findViewById(R.id.rv_setList);
 
-         */
+        //レイアウトマネージャの生成・設定（横スクロール）
+        LinearLayoutManager l_manager = new LinearLayoutManager(this);
+        l_manager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        rv.setLayoutManager(l_manager);
 
-        //DBから取得した「やること」をすべて表示
-        for( SetTable task: taskSetList ) {
-            Log.i("test", "set=" + task.getSetName());
-        }
+        //アダプタの生成・設定
+        SetRecyclerAdapter adapter = new SetRecyclerAdapter(this, setList, tasksList);
+        rv.setAdapter(adapter);
     }
 
     @Override
     public void onSuccessSetCreate(Integer code, String task) {
 
+        //-- 作成結果をトーストで表示
+        //結果メッセージ
+        String message;
+
+        //戻り値に応じてトースト表示
+        if( code == -1 ){
+            //エラーメッセージを表示
+            message = "登録済みです";
+        } else {
+            //正常メッセージを表示
+            message = "登録しました";
+        }
+
+        //トーストの生成
+        Toast toast = new Toast(getApplicationContext());
+        toast.setText(message);
+        //toast.setGravity(Gravity.CENTER, 0, 0);   //E/Toast: setGravity() shouldn't be called on text toasts, the values won't be used
+        toast.show();
+
+        if( code == -1 ){
+            //登録済みなら、ここで終了
+            return;
+        }
+
+
+        return;
     }
 
     @Override
@@ -218,25 +255,18 @@ public class SetManageActivity extends AppCompatActivity implements AsyncSetTabl
 
     @Override
     public void onSuccessTaskRead(List<TaskTable> taskList) {
-        /*
-        //レイアウトからリストビューを取得
-        ListView listView  = (ListView) findViewById(R.id.lv_task);
-        //リストビューに付与するアダプタを生成
-        BaseAdapter adapter = new TaskSelectListAdapter(this.getApplicationContext(), R.layout.unit_task_for_taskset, taskList);
-        // ListViewにadapterをセット
-        listView.setAdapter(adapter);
-        */
 
+        //-- 「やること」の表示（セットへ追加の選択用）
         //レイアウトからリストビューを取得
         RecyclerView rv  = (RecyclerView) findViewById(R.id.rv_taskList);
-        //レイアウトマネージャの生成
-        LinearLayoutManager l_manager = new LinearLayoutManager(this);
-        //横スクロール設定
-        l_manager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        //レイアウトマネージャの設定
-        rv.setLayoutManager(l_manager);
-        //アダプタを生成
-        TaskRecyclerAdapter adapter = new TaskRecyclerAdapter(taskList);
+
+        //レイアウトマネージャの生成・設定（横スクロール）
+        LinearLayoutManager ll_manager = new LinearLayoutManager(this);
+        ll_manager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        rv.setLayoutManager(ll_manager);
+
+        //アダプタの生成・設定
+        TaskRecyclerAdapter adapter = new TaskRecyclerAdapter(this, taskList);
         rv.setAdapter(adapter);
     }
 
@@ -259,68 +289,11 @@ public class SetManageActivity extends AppCompatActivity implements AsyncSetTabl
      *  -------------------------------------------------
      */
 
-    private class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapter.ViewHolder> {
-
-        private List<TaskTable> mData;
-        //private OnRecyclerListener mListener;
-
-        /*
-         * コンストラクタ
-         */
-        public TaskRecyclerAdapter(List<TaskTable> data) {
-            mData = data;
-            //mListener = listener;
-            Log.i("test", "mData=" + mData);
-        }
-
-        @Override
-        public TaskRecyclerAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-            //表示レイアウトの設定
-            LayoutInflater inflater = LayoutInflater.from(SetManageActivity.this);
-            View view = inflater.inflate(R.layout.unit_task, viewGroup, false);
-
-            Log.i("test", "onCreateViewHolder i=" + i);
-
-            return new ViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(ViewHolder viewHolder, final int i) {
-            //データ表示
-            viewHolder.task.setText(mData.get(i).getTaskName());
-            viewHolder.taskTime.setText(mData.get(i).getTaskTime() + "min");
-
-            //クリック処理
-            viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    //mListener.onRecyclerClicked(v, i);
-                }
-            });
-
-        }
-
-        @Override
-        public int getItemCount() {
-            return mData.size();
-        }
-
-        // ViewHolder(固有ならインナークラスでOK)
-        class ViewHolder extends RecyclerView.ViewHolder {
-
-            TextView task;
-            TextView taskTime;
-
-            public ViewHolder(View itemView) {
-                super(itemView);
-                this.task     = (TextView) itemView.findViewById(R.id.tv_taskName);
-                this.taskTime = (TextView) itemView.findViewById(R.id.tv_taskTime);
-            }
-        }
-
-    }
 
     public interface OnRecyclerListener {
         void onRecyclerClicked(View v, int position);
     }
+
+
+
 }

@@ -24,15 +24,28 @@ public interface SetTableDao {
      *   ※未登録の場合、プライマリーキーは「0」が返される（実証）
      *     ＝プライマリーキーは「１」から割り当てられる
      */
-    @Query("SELECT id FROM setTable WHERE set_name=(:taskSetName)")
-    int getPid(String taskSetName);
+    @Query("SELECT id FROM setTable WHERE set_name=(:setName)")
+    int getPid(String setName);
 
     /*
-     * 更新
+     * 取得：選択済み「やること」文字列
+     */
+    @Query("SELECT task_pids_string FROM setTable WHERE id=(:pid)")
+    String getTaskPidsStr(int pid);
+
+    /*
+     * 更新：セット名
      *   指定されたプライマリーキーのレコードを更新
      */
-    @Query("UPDATE setTable set set_name=(:taskSetName) WHERE id=(:pid)")
-    int updateByPid(int pid, String taskSetName);
+    @Query("UPDATE setTable set set_name=(:setName) WHERE id=(:pid)")
+    int updateSetNameByPid(int pid, String setName);
+
+    /*
+     * 更新：選択済み「やること」
+     *   指定されたプライマリーキーのレコードを更新
+     */
+    @Query("UPDATE setTable set task_pids_string=(:taskPidsStr) WHERE id=(:pid)")
+    int updateTaskPidsStrByPid(int pid, String taskPidsStr);
 
     /*
      * 削除：プライマリーキー指定
