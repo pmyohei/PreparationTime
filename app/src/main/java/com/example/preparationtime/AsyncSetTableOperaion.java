@@ -3,6 +3,7 @@ package com.example.preparationtime;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /*
@@ -37,6 +38,8 @@ public class AsyncSetTableOperaion extends AsyncTask<Void, Void, Integer> {
         this.db        = db;
         this.listener  = listener;
         this.operation = operation;
+
+        this.tasksList = new ArrayList<>();
     }
 
     /*
@@ -108,7 +111,7 @@ public class AsyncSetTableOperaion extends AsyncTask<Void, Void, Integer> {
 
         //プライマリーキー取得
         int pid = dao.getPid( this.setName);
-        Log.i("test", "set pid=" + pid);
+
         if( pid > 0 ){
             //すでに登録済みであれば、DBには追加しない
             return -1;
@@ -131,14 +134,36 @@ public class AsyncSetTableOperaion extends AsyncTask<Void, Void, Integer> {
         this.setList = dao.getAll();
 
         //-- 各セットの「選択済みやること」をリスト化する
+        //セット分ループ
         for( SetTable setInfo: this.setList ){
 
+            Log.i("test", "displaySetData setName=" + setInfo.getSetName());
+
+            //セットに紐づいた「やること」pidを取得
+            String tasksStr = setInfo.getTaskPidsStr();
+            List<Integer> pids = SetTable.getPidsIntArray(tasksStr);
+
+            //セットに紐づいた「やること」
+            List<TaskTable> tasks = new ArrayList<>();
+
+            Log.i("test", "displaySetData tasksStr=" + tasksStr);
+            //Pidあれば
+            if( pids != null ) {
+                Log.i("test", "pids");
+                //pid分繰り返し
+                for( Integer pid: pids ){
+                    Log.i("test", "displaySetData pid loop");
+                    //pidに対応する「やること」を取得し、リストに追加
+                    TaskTable task = taskTableDao.getRecord(pid);
+                    tasks.add(task);
+                }
+            }
+
+            Log.i("test", "pre add");
+            //「やること」を追加
+            this.tasksList.add(tasks);
+            Log.i("test", "after add");
         }
-
-
-
-
-
     }
 
     /*
@@ -204,6 +229,9 @@ public class AsyncSetTableOperaion extends AsyncTask<Void, Void, Integer> {
         dao.updateTaskPidsStrByPid(setPid, taskPidsStr);
     }
 
+    /*
+     * doInBackground()にコールされる
+     */
     @Override
     protected void onPostExecute(Integer code) {
         //super.onPostExecute(code);

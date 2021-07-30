@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
@@ -57,11 +56,11 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskTableOpe
             }
         });
 
-        findViewById(R.id.bt_test).setOnClickListener( new View.OnClickListener() {
+        findViewById(R.id.bt_task_manage).setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //非同期-DBアクセス
-                //new DataStoreAsyncTask(db, DataStoreAsyncTask.DB_OPERATION.READ, findViewById(R.id.ll_rootCreatedTask)).execute();
+                Intent intent = new Intent(MainActivity.this, TaskManageActivity.class);
+                startActivity(intent);
             }
         });
         //-- test
@@ -104,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskTableOpe
         //--「やること」のレイアウトインフレータを取得
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         //「やること」データのビュー
-        View taskLayout = inflater.inflate(R.layout.unit_task, null);
+        View taskLayout = inflater.inflate(R.layout.item_task_old, null);
 
         //-- 「やること」にリスナーを登録
         //リスナー設定ビューの取得

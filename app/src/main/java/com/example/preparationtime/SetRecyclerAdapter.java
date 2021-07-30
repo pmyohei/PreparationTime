@@ -40,7 +40,7 @@ public class SetRecyclerAdapter extends RecyclerView.Adapter<SetRecyclerAdapter.
     public SetRecyclerAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         //表示レイアウトの設定
         LayoutInflater inflater = LayoutInflater.from(this.mContext);
-        View view = inflater.inflate(R.layout.unit_task_for_set, viewGroup, false);
+        View view = inflater.inflate(R.layout.item_set, viewGroup, false);
 
         return new ViewHolder(view);
     }
@@ -54,13 +54,21 @@ public class SetRecyclerAdapter extends RecyclerView.Adapter<SetRecyclerAdapter.
         viewHolder.tv_setName.setText(this.mSetList.get(i).getSetName());
 
         //-- セットに紐づいた「やること」
-        //レイアウトマネージャの生成・設定
-        LinearLayoutManager ll_manager = new LinearLayoutManager(this.mContext);
-        viewHolder.rv_tasks.setLayoutManager(ll_manager);
+        Log.i("test", "set adapter pre onBindViewHolder");
 
-        //アダプタの生成・設定
-        TaskRecyclerAdapter adapter = new TaskRecyclerAdapter(this.mContext, this.mTasksList.get(i));
-        viewHolder.rv_tasks.setAdapter(adapter);
+        //紐づいた「やること」があるなら
+        if( this.mTasksList.get(i).size() > 0 ){
+
+            //レイアウトマネージャの生成・設定
+            LinearLayoutManager ll_manager = new LinearLayoutManager(this.mContext);
+            viewHolder.rv_tasks.setLayoutManager(ll_manager);
+
+            Log.i("test", "set adapter onBindViewHolder");
+
+            //アダプタの生成・設定
+            TaskRecyclerAdapter adapter = new TaskRecyclerAdapter(this.mContext, this.mTasksList.get(i));
+            viewHolder.rv_tasks.setAdapter(adapter);
+        }
 
         /*
          * クリック処理

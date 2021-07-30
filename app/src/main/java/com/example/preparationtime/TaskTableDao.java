@@ -19,6 +19,13 @@ public interface TaskTableDao {
     List<TaskTable> loadAllByIds(int[] ids);
 
     /*
+     * 取得：レコード
+     *   指定されたプライマリーキーのレコードを取得
+     */
+    @Query("SELECT * FROM taskTable WHERE id=(:pid)")
+    TaskTable getRecord(int pid);
+
+    /*
      * 取得：プライマリーキー
      *   ※未登録の場合、プライマリーキーは「0」が返される（実証）
      *     ＝プライマリーキーは「１」から割り当てられる

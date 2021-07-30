@@ -19,6 +19,9 @@ import android.widget.Toast;
 
 import java.util.List;
 
+/*
+ * 「やることセット」管理画面
+ */
 public class SetManageActivity extends AppCompatActivity implements AsyncSetTableOperaion.SetOperationListener,
                                                                     AsyncTaskTableOperaion.TaskOperationListener {
 
@@ -194,6 +197,9 @@ public class SetManageActivity extends AppCompatActivity implements AsyncSetTabl
 
     @Override
     public void onSuccessSetRead(List<SetTable> setList, List<List<TaskTable>> tasksList) {
+
+        Log.i("test", "start onSuccessSetRead");
+
         //-- 「やることセット」の表示
         //レイアウトからリストビューを取得
         RecyclerView rv  = (RecyclerView) findViewById(R.id.rv_setList);
@@ -202,6 +208,8 @@ public class SetManageActivity extends AppCompatActivity implements AsyncSetTabl
         LinearLayoutManager l_manager = new LinearLayoutManager(this);
         l_manager.setOrientation(LinearLayoutManager.HORIZONTAL);
         rv.setLayoutManager(l_manager);
+
+        Log.i("test", "onSuccessSetRead");
 
         //アダプタの生成・設定
         SetRecyclerAdapter adapter = new SetRecyclerAdapter(this, setList, tasksList);

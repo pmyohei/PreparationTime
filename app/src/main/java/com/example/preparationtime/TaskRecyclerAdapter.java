@@ -37,7 +37,7 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
     public TaskRecyclerAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         //表示レイアウトの設定
         LayoutInflater inflater = LayoutInflater.from(this.mContext);
-        View view = inflater.inflate(R.layout.unit_task, viewGroup, false);
+        View view = inflater.inflate(R.layout.item_task, viewGroup, false);
 
         Log.i("test", "onCreateViewHolder i=" + i);
 

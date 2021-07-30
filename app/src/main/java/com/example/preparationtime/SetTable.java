@@ -1,4 +1,6 @@
 package com.example.preparationtime;
+import android.util.Log;
+
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -124,6 +126,34 @@ public class SetTable {
 
         //なし
         return false;
+    }
+
+    /*
+     * 「選択済みやること文字列」のPidをint型配列として返す
+     */
+    public static List<Integer> getPidsIntArray(String str) {
+
+        //pidなしなら、終了
+        if( str.isEmpty() ){
+            return null;
+        }
+
+        //半角スペースで分割
+        String[] pidsStr = str.split(DELIMITER);
+
+        Log.i("test", "getPidsIntArray pidsStr=" + pidsStr);
+
+        //pidリスト
+        List<Integer> pids = new ArrayList<>();
+
+        //PID分ループ
+        for( String pidStr: pidsStr ){
+            Log.i("test", "getPidsIntArray loop pidStr=" + pidStr);
+            //pidを整数に変換して、リストに追加
+            pids.add( Integer.parseInt(pidStr) );
+        }
+
+        return pids;
     }
 
     /*
